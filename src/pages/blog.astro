@@ -48,6 +48,7 @@ const posts = (await Astro.glob("./blog/*.{md,mdx}"))
 								<a
 									href={post.url}
 									class="link link-primary font-bold link-hover"
+									transition:name={`post:${post.frontmatter.title}`}
 								>
 									{post.frontmatter.title}
 								</a>

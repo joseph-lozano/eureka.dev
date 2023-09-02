@@ -1,10 +1,19 @@
 ---
+import path from "path";
 export interface Props extends astroHTML.JSX.AnchorHTMLAttributes {}
 
 const { href, class: className, ...props } = Astro.props;
 
 const { pathname } = Astro.url;
-const isActive = href === pathname || href === pathname.replace(/\/$/, "");
+
+let isActive: boolean;
+if (pathname === href && pathname === "/") {
+	isActive = true;
+} else if (href !== "/" && href && pathname.startsWith(href.toString())) {
+	isActive = true;
+} else {
+	isActive = false;
+}
 ---
 
 <a
