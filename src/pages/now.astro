@@ -15,13 +15,13 @@ const lastUpdated = new Date(lastModifiedString);
 	</head>
 
 	<body
-		class="px-4 mx-auto text-left text-base-content items-center leading-relaxed max-w-6xl m-auto break-words overflow-wrap flex flex-col h-full"
+		class="overflow-wrap m-auto mx-auto flex h-full max-w-6xl flex-col items-center break-words px-4 text-left leading-relaxed text-base-content"
 		style="scrollbar-gutter: stable;"
 	>
 		<Header />
-		<main class="space-y-4 grow">
+		<main class="grow space-y-4">
 			<div class="flex items-baseline">
-				<h2 class="font-bold text-3xl">Now</h2>
+				<h2 class="text-3xl font-bold">Now</h2>
 				<span class="ml-1 text-sm text-base-content/80"
 					>Updated {lastUpdated.toLocaleDateString()}</span
 				>
@@ -31,7 +31,7 @@ const lastUpdated = new Date(lastModifiedString);
 				<p>
 					I currently work at <a
 						href="https://www.testdouble.com"
-						class="link link-primary">Test Double</a
+						class="link-primary link">Test Double</a
 					> as a Senior Softare Consultant.
 				</p>
 			</article>
