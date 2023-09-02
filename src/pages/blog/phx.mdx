@@ -3,17 +3,19 @@ layout: "../../layouts/BlogPost.astro"
 title: "How to deploy your Phoenix side projects (without a PaaS)"
 description: "Deploying Elixir and Phoenix applications used to the be one the most challenging parsts of the language. Now its among the easiest."
 pubDate: "Sept 09, 2022"
-updatedDate: "Mar 2, 2023"
+updatedDate: "Sept 09, 2022"
+isDraft: true
 ---
 
 import Alert from "../../components/Alert.astro";
+
 
 There are many great Platform as a Service (PaaS) providers for Phoenix. [Render](https://render.com/docs/deploy-phoenix), and [Fly.io](https://fly.io/docs/getting-started/elixir/) especially, and they have great documentation for getting up and running.
 PaaS providers have lots of benefits, including ease of deployments, managed databases with automatic backups, and more.
 But using a plain Virtual Private Server (VPS) can get you more power for a lot less money.
 This is especailly true if you are running multiple apps.
 
-<Alert title="Don't use this for critical applications">
+<Alert color="warning" title="Don't use this for critical applications">
   This is a guide for deploying a side projects and non-critical apps. If you
   are running a production application, you should use a PaaS provider.
 </Alert>

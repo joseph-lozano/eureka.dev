@@ -3,16 +3,17 @@ import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import { SITE_TITLE, SITE_DESCRIPTION } from "../config";
+import { execSync } from "child_process";
 
 // Use Astro.glob() to fetch all posts, and then sort them by date.
-const posts = (await Astro.glob("./blog/*.{md,mdx}"))
+const posts: Record<string, any>[] = (await Astro.glob("./blog/*.{md,mdx}"))
 	.sort(
 		(a, b) =>
 			new Date(b.frontmatter.pubDate).valueOf() -
 			new Date(a.frontmatter.pubDate).valueOf()
 	)
 	.filter((post) => {
-		return import.meta.env.DEV || !post.frontmatter.draft;
+		return import.meta.env.DEV || !post.frontmatter.isDraft;
 	});
 ---
 
@@ -31,10 +32,11 @@ const posts = (await Astro.glob("./blog/*.{md,mdx}"))
 				<ul class="list-none p-0">
 					{
 						posts.map((post) => (
-							<li class="flex">
+							<li class="flex items-baseline">
 								<time
 									datetime={post.frontmatter.pubDate}
 									class="w-[130px] italic text-gray-500"
+									transition:name={`post:${post.frontmatter.pubDate}`}
 								>
 									{new Date(post.frontmatter.pubDate).toLocaleDateString(
 										"en-us",
@@ -52,8 +54,11 @@ const posts = (await Astro.glob("./blog/*.{md,mdx}"))
 								>
 									{post.frontmatter.title}
 								</a>
-								{post.frontmatter.draft && (
-									<span class="ml-1 px-2 rounded text-yellow-600 bg-yellow-300 text-xs font-bold self-center uppercase">
+								{post.frontmatter.isDraft && (
+									<span
+										transition:name={`draft:${post.frontmatter.title}`}
+										class="badge badge-warning font-bold ml-2 uppercase"
+									>
 										draft
 									</span>
 								)}

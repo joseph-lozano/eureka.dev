@@ -11,7 +11,7 @@ export interface Props {
 		pubDate?: string;
 		updatedDate?: string;
 		heroImage?: string;
-		draft?: boolean;
+		isDraft?: boolean;
 	};
 }
 
@@ -22,7 +22,7 @@ const {
 		pubDate,
 		updatedDate,
 		heroImage,
-		draft = false,
+		isDraft = false,
 	},
 } = Astro.props;
 ---
@@ -40,13 +40,25 @@ const {
 		class="px-4 mx-auto items-center text-left text-base-content leading-relaxed max-w-6xl m-auto break-words overflow-wrap flex flex-col h-full"
 	>
 		<Header />
-		<main class="flex justify-center">
+		<main class="flex flex-col items-center">
+			{
+				isDraft && (
+					<div class="w-full mb-4" transition:name={`draft:${title}`}>
+						<Alert
+							color="warning"
+							title={
+								"This post is a draft. It may change significantly before it is published."
+							}
+						/>
+					</div>
+				)
+			}
 			<article class="prose prose-xl">
 				{heroImage && <img width={720} height={360} src={heroImage} alt="" />}
 				<h1 transition:name={`post:${title}`} class="text-4xl mt-1 mb-0">
 					{title}
 				</h1>
-				{pubDate && <time>{pubDate}</time>}
+				{pubDate && <time transition:name={`post:${pubDate}`}>{pubDate}</time>}
 				{
 					updatedDate && (
 						<div>
@@ -55,14 +67,7 @@ const {
 					)
 				}
 				<hr class="border-t border-gray-300 my-4" />
-				{
-					draft && (
-						<Alert type="warning" show={draft}>
-							This post is a draft. It may change significantly before it is
-							published.
-						</Alert>
-					)
-				}
+
 				<slot />
 			</article>
 		</main>
