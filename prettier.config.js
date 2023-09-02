@@ -10,4 +10,6 @@ export default {
 		},
 	],
 	useTabs: true,
+	trailingComma: "es5",
+	semi: true,
 };

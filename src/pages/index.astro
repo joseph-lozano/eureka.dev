@@ -1,16 +1,30 @@
 ---
-
+import BaseHead from "../components/BaseHead.astro";
+import Footer from "../components/Footer.astro";
+import Header from "../components/Header.astro";
+import { SITE_DESCRIPTION, SITE_TITLE } from "../config";
 ---
 
-<html lang="en">
+<!doctype html>
+<html lang="en" class="h-screen bg-base-200">
 	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
+		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 	</head>
-	<body>
-		<h1>Astro</h1>
+	<body
+		class="px-4 mx-auto items-center text-left text-base-content leading-relaxed max-w-6xl m-auto break-words overflow-wrap flex flex-col h-full"
+		style="scrollbar-gutter: stable;"
+	>
+		<Header title={SITE_TITLE} />
+		<main class="space-y-4 grow">
+			<h1 class="text-4xl font-bold">Hello there!</h1>
+
+			<p>
+				Welcome to my blog! Not much here at the moment, but check back soon!
+				<br />
+				 I am a software developer living in New York. I specialize in Elixir,
+				TypeScript, and React.
+			</p>
+		</main>
+		<Footer />
 	</body>
 </html>

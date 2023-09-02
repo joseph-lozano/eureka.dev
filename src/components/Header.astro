@@ -1,0 +1,18 @@
+---
+import HeaderLink from "./HeaderLink.astro";
+import { SITE_TITLE } from "../config";
+---
+
+<header class="py-8">
+	<h2 class="py-2 text-3xl font-bold font-mono">
+		{SITE_TITLE}
+	</h2>
+	<nav>
+		<HeaderLink href="/">Home</HeaderLink>
+		<HeaderLink href="/now">Now</HeaderLink>
+		<HeaderLink href="/blog">Blog</HeaderLink>
+		<HeaderLink href="https://twitter.com/jetpackjoe_" target="_blank">
+			Twitter
+		</HeaderLink>
+	</nav>
+</header>

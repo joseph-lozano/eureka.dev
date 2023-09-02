@@ -1,0 +1,17 @@
+---
+const props = Astro.props;
+---
+
+<!-- 
+Do not delete this comment since Tailwind needs to read the full border-color class in order to correctly generate the CSS
+
+border-white border-info border-secondary border-accent border-info border-success border-warning border-error border-neutral 
+-->
+<div
+	class={`${
+		props.color ? `bg-${props.color}` : "bg-warning"
+	} border-3 border-black p-4 space-x-8`}
+>
+	{props.title && <span class="font-bold">{props.title}</span>}
+	<slot />
+</div>

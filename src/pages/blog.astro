@@ -1,0 +1,67 @@
+---
+import BaseHead from "../components/BaseHead.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { SITE_TITLE, SITE_DESCRIPTION } from "../config";
+
+// Use Astro.glob() to fetch all posts, and then sort them by date.
+const posts = (await Astro.glob("./blog/*.{md,mdx}"))
+	.sort(
+		(a, b) =>
+			new Date(b.frontmatter.pubDate).valueOf() -
+			new Date(a.frontmatter.pubDate).valueOf()
+	)
+	.filter((post) => {
+		return import.meta.env.DEV || !post.frontmatter.draft;
+	});
+---
+
+<!doctype html>
+<html lang="en" class="h-screen bg-base-200">
+	<head>
+		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+	</head>
+	<body
+		class="px-4 mx-auto items-center text-left text-base-content leading-relaxed max-w-6xl m-auto break-words overflow-wrap flex flex-col h-full"
+		style="scrollbar-gutter: stable;"
+	>
+		<Header title={SITE_TITLE} />
+		<main class="space-y-4 grow">
+			<section>
+				<ul class="list-none p-0">
+					{
+						posts.map((post) => (
+							<li class="flex">
+								<time
+									datetime={post.frontmatter.pubDate}
+									class="w-[130px] italic text-gray-500"
+								>
+									{new Date(post.frontmatter.pubDate).toLocaleDateString(
+										"en-us",
+										{
+											year: "numeric",
+											month: "short",
+											day: "numeric",
+										}
+									)}
+								</time>
+								<a
+									href={post.url}
+									class="link link-primary font-bold link-hover"
+								>
+									{post.frontmatter.title}
+								</a>
+								{post.frontmatter.draft && (
+									<span class="ml-1 px-2 rounded text-yellow-600 bg-yellow-300 text-xs font-bold self-center uppercase">
+										draft
+									</span>
+								)}
+							</li>
+						))
+					}
+				</ul>
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>

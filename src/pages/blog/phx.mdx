@@ -1,0 +1,202 @@
+---
+layout: "../../layouts/BlogPost.astro"
+title: "How to deploy your Phoenix side projects (without a PaaS)"
+description: "Deploying Elixir and Phoenix applications used to the be one the most challenging parsts of the language. Now its among the easiest."
+pubDate: "Sept 09, 2022"
+updatedDate: "Mar 2, 2023"
+---
+
+import Alert from "../../components/Alert.astro";
+
+There are many great Platform as a Service (PaaS) providers for Phoenix. [Render](https://render.com/docs/deploy-phoenix), and [Fly.io](https://fly.io/docs/getting-started/elixir/) especially, and they have great documentation for getting up and running.
+PaaS providers have lots of benefits, including ease of deployments, managed databases with automatic backups, and more.
+But using a plain Virtual Private Server (VPS) can get you more power for a lot less money.
+This is especailly true if you are running multiple apps.
+
+<Alert title="Don't use this for critical applications">
+  This is a guide for deploying a side projects and non-critical apps. If you
+  are running a production application, you should use a PaaS provider.
+</Alert>
+
+In this post, we are going to go from (almost) zero to deployment using Hetzner, but you can follow along using other cloud providers, such as [Linode](https://linode.com), [Digital Ocean](https://digitalocean.com), or even AWS or GCP.
+I chose [Hetzner](https://hetzner.com) for their great reviews, and low price.
+
+I am assuming familiarity with the command line and git.
+If you get stuck at point, just shoot me an [email](mailto:me@josephlozano.dev).
+
+## Get a server
+
+Create an account at https://cloud.hetzner.com, and create a server in a region near you.
+I chose Ashburn, VA, Ubuntu 22.04, Standard, and the cheapest option CPX11.
+I already had an ssh set up (for github, so I uploaded the public key to Hetzner and used that).
+
+![Hetzer create server page](/images/hetzner-create-server.png)
+
+After you click "Create and Buy Now", your server will take a few seconds to provision.
+Once it is done provisioning, take note of the IP address.
+We will use it later.
+
+## Setup DNS
+
+This could really be done at the end, but since DNS propagation could take some time, better to just get it out of the way early.
+I use namecheap, so I am going to set up a A record, pointing `phoenix.joseph.wtf` to the IP address of my server from Hetzner.
+
+## Phoenix Application Set Up
+
+If Elixir and Phoenix are not already installed on your machine, install them now. [Instructions](https://hexdocs.pm/phoenix/installation.html).
+
+```bash
+# Your machine
+yes | mix phx.new my_app --verbose
+cd my_app
+git init
+git add -A
+git commit -am "init"
+```
+
+Create a repo in your git repository of choice, such as Github, or Gitlab.
+
+Now here is the real magic.
+
+```bash
+# Your machine
+mix phx.gen.release --docker # 🤯
+```
+
+This created a few files, the most important of which is the `Dockerfile` .
+
+Lets also create a file called `docker-compose.yaml`
+
+```yaml
+# docker-compose.yaml
+services:
+  web:
+    build: .
+    env_file: ".env"
+    ports:
+      - "4000:4000"
+    depends_on:
+      - "postgres"
+    restart: "always"
+  postgres:
+    image: "postgres:15.2-bullseye"
+    env_file: ".env"
+    volumes:
+      - "postgres:/var/lib/postgresql/data"
+    restart: "always"
+  migration:
+    build: .
+    env_file: ".env"
+    depends_on:
+      - web
+      - postgres
+    command: bin/migrate
+    restart: "no"
+  caddy:
+    image: caddy:2.6.4-alpine
+    restart: unless-stopped
+    command: caddy reverse-proxy --from https://phoenix.joseph.wtf:443 --to http://web:4000
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - caddy:/data
+    depends_on:
+      - web
+volumes:
+  postgres: {}
+  caddy: {}
+```
+
+<Alert color="info">
+  Replace `phoenix.joseph.wtf` in the `caddy`/`command` section with your domain name.
+</Alert>
+
+Next, create a `.env` file, which will hold your applicaton secrets.
+
+<Alert title=".env contains application secrets!">
+  Make sure you add this file to `.gitignore`.
+</Alert>
+You can generate a secret key base with `mix phx.gen.secret`. Since this file is
+ignored by git, you'll want to add it (with different secrets) to both your development
+machine, and the prod machine.
+
+```bash
+# .env
+SECRET_KEY_BASE=<run mix phx.gen.secret>
+PHX_HOST="phoenix.joseph.wtf"
+POSTGRES_USER=my_app
+POSTGRES_PASSWORD=password
+POSTGRES_DB=my_app
+DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+```
+
+Now that we've created our release, and `docker-compose.yaml` file, we can commit.
+
+```bash
+# Your machine
+# make sure .env is ignored by git.
+git add -A
+git commit -m "Dockerize"
+git push
+```
+
+Now, bring it all together on your development machine.
+Run `docker-compose up --build`.
+Because we are forwarding port 4000 from Docker, we just visit https://localhost:4000 to see our app running in Docker.
+
+## Ready, Set, Deploy
+
+### Setting up our prod machine
+
+```bash
+# Your machine
+# Replace id_ed25519 with your SSH private key,
+# and 5.161.109.211 with the IP address of the server you provisioned
+ssh -i ~/.ssh/id_ed25519 root@<your_ip>
+```
+
+After this command, you will be in a terminal prompt on your production machine.
+
+First install docker per the most up to date instructions on [docs.docker.com](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
+
+```bash
+# Prod machine
+sudo apt-get update
+sudo apt-get install \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+
+sudo mkdir -m 0755 -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+sudo apt-get update
+
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+
+```bash
+# Prod machine
+# replace with the URL of your repo
+git clone https://github.com/joseph-lozano/my_app
+cd my_app
+# create a .env file with your application secrets, just like on the development machine
+vi .env
+```
+
+After all that is done, just run
+
+```bash
+# Prod machine
+docker-compose up --build -d
+```
+
+<Alert color="success" title="Now your app is officially running in production!">
+  Visit whatever domain you used and see your app running!
+</Alert>

@@ -1,0 +1,40 @@
+---
+import { execSync } from "child_process";
+import BaseHead from "../components/BaseHead.astro";
+import Header from "../components/Header.astro";
+
+const lastModifiedString = execSync(
+	`git log -1 --pretty="format:%cI" src/pages/now.astro`
+).toString();
+const lastUpdated = new Date(lastModifiedString);
+---
+
+<html lang="en" class="h-screen bg-base-200">
+	<head>
+		<BaseHead title={"Now"} description={"What I'm up to right now"} />
+	</head>
+
+	<body
+		class="px-4 mx-auto text-left text-base-content items-center leading-relaxed max-w-6xl m-auto break-words overflow-wrap flex flex-col h-full"
+		style="scrollbar-gutter: stable;"
+	>
+		<Header />
+		<main class="space-y-4 grow">
+			<div class="flex items-baseline">
+				<h2 class="font-bold text-3xl">Now</h2>
+				<span class="ml-1 text-sm text-base-content/80"
+					>Updated {lastUpdated.toLocaleDateString()}</span
+				>
+			</div>
+
+			<article class="prose">
+				<p>
+					I currently work at <a
+						href="https://www.testdouble.com"
+						class="text-blue-700">Test Double</a
+					> as a Senior Softare Consultant.
+				</p>
+			</article>
+		</main>
+	</body>
+</html>
